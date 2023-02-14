@@ -1,0 +1,123 @@
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="{% if page.summary %}{{ page.summary | strip_html | strip_newlines | truncate: 160 }}{% endif %}">
+<meta name="keywords" content="{% if page.tags %}{{ page.tags | join: ', ' | escape }}{% endif %}">
+{% comment %}
+{%- capture stable_pages_names -%}{%- include_cached stable_page_names.md -%}{%- endcapture -%}
+{%- comment -%} Fetch all the names of all the stable pages to compare against the dev pages {%- endcomment -%}
+{%- assign dev_page_has_matching_stable_page = false -%}
+{%- if page.url contains site.versions["dev"] and site.versions["dev"] != site.versions["stable"] and stable_pages_names contains page.name -%}
+{%- assign dev_page_has_matching_stable_page = true -%}
+{%- endif -%}
+{%- assign non_dev_stable_version = true -%}
+{%- if page.url contains site.versions["dev"] or page.url contains site.versions["stable"] or page.main_homepage == true -%}
+{%- assign non_dev_stable_version = false -%}
+{%- endif -%}
+{%- if page.url contains '404' or page.sitemap == false or dev_page_has_matching_stable_page == true or non_dev_stable_version == true %}
+<meta name="robots" content="noindex">
+<meta name="robots" content="nofollow">
+<meta name="robots" content="noarchive">
+<meta name="robots" content="nocache">
+{%- comment -%} Inject robots tags for all 404 pages, all pages where the sitemap is false, or all pages in dev that are also in stable {%- endcomment -%}
+{%- else -%}
+{%- unless page.url contains site.versions["stable"] or dev_page_has_matching_stable_page == false or page.url contains 'cockroachcloud/' or page.url contains 'releases/' or page.url contains 'advisories/' or page.sitemap == true -%}
+{%- comment -%} Otherwise, inject robots tags for all pages that are not in stable, cockroachcloud, releases, advisories, or any pages in dev that are not in stable. {%- endcomment -%}
+<meta name="robots" content="noindex">
+<meta name="robots" content="nofollow">
+<meta name="robots" content="noarchive">
+<meta name="robots" content="nocache">
+{% endunless -%}
+{%- endif -%}
+{% endcomment %}
+{% comment %} The below if block helps prove ownership of the cockroachlabs.com/docs website for Google Search Console. {% endcomment %}
+{% if page.layout == "homepage" %}
+<meta name="google-site-verification" content="Du_z8l1I9HPqQS022xQn6UTRhDWYQRJZchcoUhYfQaM" /> {% comment %} Nick Vigilante {% endcomment %}
+<meta name="google-site-verification" content="xIjIKHNh-szz0m5JilyA4IriUmVD5DxeYBE18xSqvZY" /> {% comment %} Joe Nickdow {% endcomment %}
+<meta name="google-site-verification" content="tJzwad6zE43z3_4uoZ8Jx4iquB66Kpt5zcK6yxNXg_A" /> {% comment %} Dan Kelly {% endcomment %}
+{% endif %}
+<title>{{ page.title }} | {{ site.site_title }}</title>
+{%- assign dev_path = "/" | append: site.versions["dev"] | append: "/" -%}
+<link rel="canonical" href="{{ site.main_url | append: site.baseurl | append: page.canonical | replace: dev_path, "/dev/" }}">
+<link rel="shortcut icon" href="{{ 'images/favicon.png' | relative_url }}" type="image/png">
+
+{% if page.comparison == true %}<link rel="stylesheet" type="text/css" href="{{ 'css/select2.min.css' | relative_url }}">{% endif %}
+{% include_cached corestyles.css.html %}
+<link rel="preload" href="{{ 'css/customstyles.css' | relative_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{{ 'css/customstyles.css' | relative_url }}"></noscript>
+
+<script>
+var pageConfig = {
+  tocNotNested: {% if page.toc_not_nested %}true{% else %}false{% endif %}
+};
+</script>
+<script>
+  function whenAvailable(name, callback, isJqueryFn = false) {
+    var interval = 500; // ms
+    var evaluation = isJqueryFn ? $()[name] : window[name];
+    window.setTimeout(function() {
+        if (evaluation) {
+            callback();
+        } else {
+            whenAvailable(name, callback, isJqueryFn);
+        }
+    }, interval);
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+
+{%- comment -%} Add the Brand Website segment source and fire a page impression. {%- endcomment -%}
+<script>
+  !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._loadOptions=e};analytics._writeKey="Mz68FzJ2r4poMQ4bQTniyvZF9yF0ycET";;analytics.SNIPPET_VERSION="4.15.3";
+  analytics.load("Mz68FzJ2r4poMQ4bQTniyvZF9yF0ycET", {
+    user: {
+      cookie: {
+        key: "crl_brand_ajs_user_id",
+        oldKey: "crl_brand_ajs_user",
+      },
+      localStorage: {
+        key: "crl_brand_ajs_user_traits",
+      },
+    },
+    group: {
+      cookie: {
+        key: "crl_brand_ajs_group_id",
+      },
+      localStorage: {
+        key: "crl_brand_ajs_group_properties",
+      }
+    }
+  });
+  analytics.page();
+  }}();
+</script>
+
+{% if page.layout == "api" %}
+  <script src="{{ 'js/rapidoc-min.js' | relative_url }}"></script>
+{% endif %}
+
+{% if page.comparison == true %}
+  <script src="{{ 'js/comparison-chart.js' | relative_url }}"></script>
+  <script src="{{ 'js/select2.min.js' | relative_url }}"></script>
+{% endif %}
+{% if page.license == true %}
+  <script src="{{ 'js/license-on-page.js' | relative_url }}"></script>
+{% endif %}
+
+<link rel="preconnect dns-prefetch" href="//go.cockroachlabs.com" />
+<link rel="preconnect dns-prefetch" href="//cockroach-labs-docs.imgix.net" />
+
+<link rel="preload" href="//go.cockroachlabs.com/js/forms2/js/forms2.min.js" as="script" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Source+Code+Pro&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Source+Code+Pro&family=Source+Sans+Pro:wght@300;400;600;700&display=swap"></noscript>
+
+
+<link rel="preconnect dns-prefetch" href="https://app.convertflow.co/" >
+<link rel="preconnect dns-prefetch" href="https://js.convertflow.co/" data-proofer-ignore>
+
+<link rel="preload" as="image" href="https://cockroach-labs-docs.imgix.net/bg-3-1.png?auto=format,compress&w=1200&q=40" />
+<link rel="preload" as="image" href="https://cockroach-labs-docs.imgix.net/bg-early-3-1.png?auto=format,compress&w=1200&q=40" />
